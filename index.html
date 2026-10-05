@@ -287,6 +287,7 @@ const UNI_FIELDS = [
     {id:'eng', name:'Engineering', req:['ENG4U','MHF4U','MCV4U','SCH4U','SPH4U']},
     {id:'cs', name:'Computer Science', req:['ENG4U','MHF4U','MCV4U'], note:'ICS4U is recommended, rarely required.'},
     {id:'math', name:'Mathematics and Statistics', req:['ENG4U','MHF4U','MCV4U']},
+    {id:'actsci', name:'Actuarial Science', req:['ENG4U','MHF4U','MCV4U'], note:'Offered at Waterloo, Western, Toronto and York, among others. Waterloo recommends ICS3U. Becoming a qualified actuary also takes a series of professional exams.'},
     {id:'arch', name:'Architecture', req:['ENG4U','SPH4U',G(1,['MHF4U','MCV4U'])], note:'Most schools also ask for a portfolio.'}]],
   ['Aviation', [
     {id:'avsci', name:'Science and Aviation (pilot training)', req:['ENG4U','MHF4U','MCV4U',G(2,['SBI4U','SCH4U','SPH4U','SES4U','MDM4U'])], note:'Offered at Waterloo. Includes flight training and needs a Transport Canada Category 1 medical.'},
@@ -408,6 +409,7 @@ const CAREERS = {
   eng:['Civil engineer','Mechanical engineer','Electrical engineer','Software engineer','Project engineer'],
   cs:['Software developer','Data scientist','Cybersecurity analyst','Machine learning engineer','Systems analyst'],
   math:['Actuary','Data analyst','Statistician','Financial analyst','Operations research analyst'],
+  actsci:['Actuary (after professional exams)','Actuarial analyst','Risk analyst','Pension consultant','Insurance underwriter'],
   arch:['Architect (after a master’s and licensing)','Architectural designer','Urban designer','Building information modeller','Project coordinator'],
   avsci:['Airline pilot','Commercial pilot','Flight instructor','Flight operations officer','Aviation safety analyst'],
   avgeo:['Airline pilot','Commercial pilot','Flight instructor','Airport planner','Geospatial analyst'],
