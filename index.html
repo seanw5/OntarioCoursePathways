@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>[hidden]{display:none!important}body{margin:0}img{max-width:100%}</style>
+<title>Ontario Course Pathways</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Figtree:wght@400;500;600&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: course tree (subject > Gr 11 > Gr 12) on the left, programs on the right, prerequisite wires between them */
+:root{
+  --bg:#f1f5f3; --surface:#ffffff; --ink:#15211c; --muted:#5a6a63; --dim:#9aa6a0;
+  --line:#d3dcd7; --accent:#0a6a50; --accent-soft:#dbeee6; --on-accent:#ffffff;
+  --warn:#9a5200; --warn-soft:#fbebd2;
+  --display:"Bricolage Grotesque","Avenir Next","Segoe UI",sans-serif;
+  --body:"Figtree","Segoe UI",system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0f1513; --surface:#18211e; --ink:#e5ece8; --muted:#95a49d; --dim:#5c6963;
+    --line:#2b3732; --accent:#52d0a6; --accent-soft:#153a2f; --on-accent:#06281e;
+    --warn:#efb25c; --warn-soft:#3a2b11; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0f1513; --surface:#18211e; --ink:#e5ece8; --muted:#95a49d; --dim:#5c6963;
+  --line:#2b3732; --accent:#52d0a6; --accent-soft:#153a2f; --on-accent:#06281e;
+  --warn:#efb25c; --warn-soft:#3a2b11; color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.45}
+.page{max-width:1180px;margin:0 auto;padding-inline:20px;padding-block:28px 56px}
+header h1{font-family:var(--display);font-weight:700;font-size:clamp(28px,4.5vw,42px);line-height:1.05;margin:0 0 10px;text-wrap:balance;letter-spacing:-.01em}
+header p{max-width:65ch;margin:0;color:var(--muted)}
+.presets{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;align-items:center}
+.presets span{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-right:4px}
+button{font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:6px 14px;cursor:pointer}
+button:hover{border-color:var(--accent)}
+button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;margin-top:22px;background:var(--bg);border-bottom:1px solid var(--line);padding-block:10px;display:flex;flex-wrap:wrap;gap:8px 24px;align-items:center}
+.bar strong{font-family:var(--display);font-size:20px;font-weight:700}
+.bar .count b{color:var(--accent);font-family:var(--display);font-size:24px;font-variant-numeric:tabular-nums}
+.credits{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:13px}
+.pips{display:flex;gap:3px}
+.pips i{width:14px;height:8px;border-radius:2px;border:1px solid var(--dim)}
+.pips i.f{background:var(--accent);border-color:var(--accent)}
+.bar .sp{flex:1}
+.bar a{color:var(--accent);font-size:13px}
+.jump{display:none}
+
+.map{position:relative;display:grid;grid-template-columns:minmax(300px,370px) 130px minmax(0,1fr);margin-top:20px}
+.map>svg{position:absolute;inset:0;pointer-events:none;overflow:visible}
+.colhead{font-size:12px;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin:0 0 12px;font-weight:600}
+.courses{grid-column:1;min-width:0}
+@media (min-width:861px){.map.pin .courses{position:sticky;top:calc(env(safe-area-inset-top,0px) + 64px);align-self:start}}
+.programs{grid-column:3;min-width:0}
+.grp{font-family:var(--display);font-weight:500;font-size:16px;margin:18px 0 6px}
+#courses .grp:first-of-type{margin-top:0}
+.sechead{font-family:var(--display);font-weight:700;font-size:22px;margin:0}
+.secsub{margin:2px 0 0;color:var(--muted);font-size:13px}
+.tracks{display:flex;flex-wrap:wrap;gap:8px;margin-top:22px}
+.tracks button{border-radius:8px;padding:9px 18px 10px;text-align:left;font-family:var(--display);font-size:17px;font-weight:500;display:grid;gap:1px}
+.tracks small{font-family:var(--body);font-size:11px;text-transform:uppercase;letter-spacing:.09em;color:var(--muted)}
+.tracks button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.tracks button[aria-pressed="true"] small{color:var(--on-accent);opacity:.8}
+
+ul.tree,ul.tree ul{list-style:none;margin:0;padding:0}
+ul.tree ul{margin-left:11px;padding-left:13px;border-left:1px solid var(--line)}
+ul.tree li{position:relative}
+ul.tree ul>li::before{content:"";position:absolute;left:-13px;top:15px;width:9px;border-top:1px solid var(--line)}
+.row{display:flex;align-items:baseline;gap:8px;min-height:30px;padding:3px 8px;border-radius:6px;border:1px solid transparent}
+.code{font-family:var(--mono);font-size:12.5px;font-weight:700;letter-spacing:.02em;flex:none}
+.cname{min-width:0;font-size:14px}
+.g11{color:var(--muted)}
+.row .tag{font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;border:1px solid var(--line);border-radius:4px;padding:0 5px;flex:none;color:var(--muted)}
+.g11.sel{color:var(--ink)}
+.row.sel .tag{border-color:var(--accent);color:var(--accent)}
+label.row{cursor:pointer}
+label.row:hover{border-color:var(--line);background:var(--surface)}
+label.row input{accent-color:var(--accent);margin:0;align-self:center;width:15px;height:15px;flex:none}
+label.row.sel{background:var(--accent-soft)}
+label.row.sel .code{color:var(--accent)}
+label.row.need{border-color:var(--warn);border-style:dashed}
+label.row.elective .code{font-weight:500}
+
+.prog{border:1px solid var(--line);border-radius:8px;padding:9px 12px;margin-bottom:8px;display:grid;gap:6px;background:transparent;transition:opacity .15s}
+.prog-head{display:flex;gap:10px;align-items:baseline;justify-content:space-between}
+.prog h4{margin:0;font-size:15px;font-weight:600;min-width:0}
+.status{font-size:11.5px;text-transform:uppercase;letter-spacing:.07em;flex:none;font-weight:600}
+.chips{display:flex;flex-wrap:wrap;gap:5px}
+.chip{font-family:var(--mono);font-size:11.5px;font-weight:500;border-radius:4px;padding:1px 6px;border:1px solid transparent}
+.chip em{font-family:var(--body);font-style:normal;opacity:.8}
+.chip.met{background:var(--accent-soft);color:var(--accent)}
+.chip.miss{border:1px dashed var(--dim);color:var(--muted)}
+.note{margin:0;font-size:12.5px;color:var(--muted)}
+.prog .add{justify-self:start;font-size:12.5px;padding:3px 10px}
+.prog.open{background:var(--surface);border-color:var(--accent)}
+.prog.open .status{color:var(--accent)}
+.prog.open .add{display:none}
+.prog.closed h4,.prog.closed .note{color:var(--dim)}
+.prog.closed .status{color:var(--dim)}
+.prog.closed .chip.met{opacity:.7}
+.prog.closed:hover,.prog.closed:focus-within{border-color:var(--warn)}
+.prog.closed:hover h4,.prog.closed:focus-within h4{color:var(--ink)}
+.prog.closed:hover .status,.prog.closed:focus-within .status{color:var(--warn)}
+.prog.closed:hover .chip.miss,.prog.closed:focus-within .chip.miss{border-color:var(--warn);color:var(--warn);background:var(--warn-soft)}
+
+.e{fill:none;stroke:var(--line);stroke-width:1;opacity:.35}
+.e.part{stroke:var(--dim);opacity:.7}
+.e.on{stroke:var(--accent);stroke-width:1.4;opacity:.7}
+svg.has-hot .e{opacity:.08}
+svg.has-hot .e.hot{opacity:1;stroke-width:2}
+svg.has-hot .e.hot.want{stroke:var(--warn);stroke-dasharray:5 4}
+
+footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:var(--muted);font-size:13px;max-width:75ch}
+footer p{margin:0 0 8px}
+
+@media (max-width:860px){
+  .map{grid-template-columns:minmax(0,1fr);gap:28px}
+  .map>svg{display:none}
+  .courses,.programs{grid-column:1}
+  .jump{display:inline}
+}
+@media (prefers-reduced-motion:reduce){.prog{transition:none}}
+</style>
+</head>
+<body>
+
+<div class="page">
+  <header>
+    <h1>Which university and college programs do your courses open?</h1>
+    <p>Tick the Ontario Grade 11 and 12 courses you have or plan to take. Pick a track to see the courses that matter for it and the programs they lead to. Your ticks carry over between tracks. Programs you meet the prerequisites for light up. The rest stay grey and show which courses are missing.</p>
+    <div class="tracks" id="tracks" role="group" aria-label="Choose a track">
+      <button type="button" data-show="u" aria-pressed="true"><small>Track 1</small>High school → University</button>
+      <button type="button" data-show="c" aria-pressed="false"><small>Track 2</small>High school → College</button>
+    </div>
+    <div class="presets" id="presets">
+      <span>Try an example</span>
+      <button type="button" data-track="u" data-preset="eng">Engineering track</button>
+      <button type="button" data-track="u" data-preset="life">Life science track</button>
+      <button type="button" data-track="u" data-preset="biz">Business track</button>
+      <button type="button" data-track="u" data-preset="arts">Arts track</button>
+      <button type="button" data-track="c" data-preset="chealth">Health track</button>
+      <button type="button" data-track="c" data-preset="ctech">Technology track</button>
+      <button type="button" data-preset="none">Clear all</button>
+    </div>
+  </header>
+
+  <div class="bar" aria-live="polite">
+    <div class="count"><b id="openN">0</b> of <span id="totalN">0</span> <span id="kindWord">university</span> programs open</div>
+    <div class="credits" id="credits"><div class="pips" id="pips"></div><span id="creditText"></span></div>
+    <span class="sp"></span>
+    <a class="jump" href="#programs">Jump to programs</a>
+  </div>
+
+  <div class="map" id="map">
+    <svg id="wires" aria-hidden="true"></svg>
+    <section class="courses" aria-label="High school courses">
+      <p class="colhead">Grade 11 → Grade 12 courses</p>
+      <div id="courses"></div>
+    </section>
+    <section class="programs" id="programs" aria-label="University and college programs">
+      <p class="colhead">Programs and their prerequisites</p>
+      <div id="progs"></div>
+    </section>
+  </div>
+
+  <footer>
+    <p><strong>What this covers.</strong> The Grade 12 university (U) and university/college (M) courses that Ontario universities count toward admission, the college (C) courses that college programs name as prerequisites, and the Grade 11 course each one builds on. Course codes, titles and prerequisite links match the Ministry of Education's Course Descriptions and Prerequisites listing (updated August 2026). Focus courses in the arts and emphasis courses in technology use variant codes and are not listed separately. Workplace, open and other college-level courses are left out. They count toward the diploma but are not named as program prerequisites.</p>
+    <p><strong>What it does not cover.</strong> Prerequisites shown are the typical set across Ontario universities and Ontario public colleges. College programs elsewhere in Canada set requirements against their own province's courses. A university-level course always satisfies a college-level requirement in the same subject, and where a college asks for Grade 11 or 12 biology or chemistry, the Grade 12 U course counts too. Individual schools differ, and some add minimum grades, supplementary applications, portfolios or auditions. Every university program also needs six Grade 12 U/M credits and a competitive average. College prerequisites were checked in October 2026 against program pages at Durham, Georgian, Mohawk, Conestoga and Lambton colleges. The skilled trades and cook and baker entries are the college programs that prepare for those trades. Licensing as an electrician, plumber or refrigeration mechanic comes through an apprenticeship, which has its own entry rules. ontariocolleges.ca does not list course prerequisites itself and sends applicants to each college's page. Confirm on OUInfo or the school's own admissions page before choosing courses. French-language programs accept FRA4U in place of ENG4U.</p>
+  </footer>
+</div>
+
+<script>
+const G = (n, of) => ({n, of});
+const MATH = ['MHF4U','MCV4U','MDM4U'];
+
+// Subject > Grade 11 > Grade 12. g:11 rows are context only; the rest are selectable.
+const SUBJECTS = [
+  ['English', [
+    {code:'ENG3U', name:'English', g:11, kids:[
+      {code:'ENG4U', name:'English'},
+      {code:'EWC4U', name:"The Writer's Craft"},
+      {code:'ETS4U', name:'Studies in Literature'}]},
+    {code:'ENG3C', name:'English (college)', g:11, kids:[
+      {code:'ENG4C', name:'English (college)'}]}]],
+  ['Mathematics', [
+    {code:'MCR3U', name:'Functions', g:11, kids:[
+      {code:'MHF4U', name:'Advanced Functions', kids:[
+        {code:'MCV4U', name:'Calculus and Vectors'}]},
+      {code:'MDM4U', name:'Mathematics of Data Management'}]},
+    {code:'MCF3M', name:'Functions and Applications', g:11, kids:[
+      {code:'MCT4C', name:'Mathematics for College Technology'}]},
+    {code:'MBF3C', name:'Foundations for College Mathematics', g:11, kids:[
+      {code:'MAP4C', name:'Foundations for College Mathematics'}]}]],
+  ['Science', [
+    {code:'SBI3U', name:'Biology', g:11, kids:[{code:'SBI4U', name:'Biology'}]},
+    {code:'SCH3U', name:'Chemistry', g:11, kids:[{code:'SCH4U', name:'Chemistry'}]},
+    {code:'SPH3U', name:'Physics', g:11, kids:[{code:'SPH4U', name:'Physics'}]},
+    {code:'SES4U', name:'Earth and Space Science'},
+    {code:'SNC4M', name:'Science'},
+    {code:'SBI3C', name:'Biology (college)', g:11},
+    {code:'SCH4C', name:'Chemistry (college)'},
+    {code:'SPH4C', name:'Physics (college)'}]],
+  ['Business', [
+    {code:'BAF3M', name:'Financial Accounting Fundamentals', g:11, kids:[
+      {code:'BAT4M', name:'Financial Accounting Principles'}]},
+    {code:'BBB4M', name:'International Business Fundamentals'},
+    {code:'BOH4M', name:'Business Leadership: Management Fundamentals'}]],
+  ['Canadian and World Studies', [
+    {code:'CIA4U', name:'Analysing Current Economic Issues'},
+    {code:'CLN4U', name:'Canadian and International Law'},
+    {code:'CHY4U', name:'World History since the Fifteenth Century'},
+    {code:'CHI4U', name:'Canada: History, Identity, and Culture'},
+    {code:'CGW4U', name:'World Issues: A Geographic Analysis'},
+    {code:'CPW4U', name:'Canadian and International Politics'},
+    {code:'CGR4M', name:'The Environment and Resource Management'},
+    {code:'CGU4M', name:'World Geography: Urban Patterns and Population Issues'},
+    {code:'CGO4M', name:'Spatial Technologies in Action'}]],
+  ['Social Sciences and Humanities', [
+    {code:'HSB4U', name:'Challenge and Change in Society'},
+    {code:'HZT4U', name:'Philosophy: Questions and Theories'},
+    {code:'HHS4U', name:'Families in Canada'},
+    {code:'HFA4U', name:'Nutrition and Health'},
+    {code:'HSE4M', name:'Equity and Social Justice: From Theory to Practice'},
+    {code:'HSC4M', name:'World Cultures'},
+    {code:'HNB4M', name:'The World of Fashion'},
+    {code:'HHG4M', name:'Human Development throughout the Lifespan'}]],
+  ['First Nations, Métis, and Inuit Studies', [
+    {code:'NDW4M', name:'Contemporary Indigenous Issues and Perspectives in a Global Context'},
+    {code:'NDG4M', name:'First Nations, Métis, and Inuit Governance in Canada'}]],
+  ['Computer Studies and Technology', [
+    {code:'ICS3U', name:'Introduction to Computer Science', g:11, kids:[{code:'ICS4U', name:'Computer Science'}]},
+    {code:'TEJ3M', name:'Computer Engineering Technology', g:11, kids:[{code:'TEJ4M', name:'Computer Engineering Technology'}]},
+    {code:'TDJ3M', name:'Technological Design', g:11, kids:[{code:'TDJ4M', name:'Technological Design'}]},
+    {code:'TGJ3M', name:'Communications Technology', g:11, kids:[{code:'TGJ4M', name:'Communications Technology'}]},
+    {code:'TMJ3M', name:'Manufacturing Engineering Technology', g:11, kids:[{code:'TMJ4M', name:'Manufacturing Engineering Technology'}]},
+    {code:'TPJ3M', name:'Health Care', g:11, kids:[{code:'TPJ4M', name:'Health Care'}]},
+    {code:'THJ3M', name:'Green Industries', g:11, kids:[{code:'THJ4M', name:'Green Industries'}]}]],
+  ['The Arts', [
+    {code:'AVI3M', name:'Visual Arts', g:11, kids:[{code:'AVI4M', name:'Visual Arts'}]},
+    {code:'AMU3M', name:'Music', g:11, kids:[{code:'AMU4M', name:'Music'}]},
+    {code:'ADA3M', name:'Drama', g:11, kids:[{code:'ADA4M', name:'Drama'}]},
+    {code:'ATC3M', name:'Dance', g:11, kids:[{code:'ATC4M', name:'Dance'}]},
+    {code:'ASM3M', name:'Media Arts', g:11, kids:[{code:'ASM4M', name:'Media Arts'}]}]],
+  ['French', [
+    {code:'FSF3U', name:'Core French', g:11, kids:[{code:'FSF4U', name:'Core French'}]},
+    {code:'FIF3U', name:'French Immersion', g:11, kids:[{code:'FIF4U', name:'French Immersion'}]},
+    {code:'FEF3U', name:'Extended French', g:11, kids:[{code:'FEF4U', name:'Extended French'}]}]],
+  ['Classical Studies and International Languages', [
+    {code:'LVV4U', name:'Classical Civilization'},
+    {code:'LVLCU', name:'Latin', g:11, tag:'Level 2', kids:[{code:'LVLDU', name:'Latin, Level 3', tag:'Level 3'}]},
+    {code:'LVGCU', name:'Ancient Greek', g:11, tag:'Level 2', kids:[{code:'LVGDU', name:'Ancient Greek, Level 3', tag:'Level 3'}]},
+    {code:'LBACU–LDYCU', name:'International Languages', g:11, tag:'Level 2', kids:[{code:'LBADU–LDYDU', name:'International Languages, Level 3 (code varies by language)', tag:'Level 3'}]}]],
+  ['Health and Physical Education', [
+    {code:'PSK4U', name:'Introductory Kinesiology'},
+    {code:'PLF4M', name:'Recreation and Healthy Active Living Leadership'}]],
+  ['Interdisciplinary', [
+    {code:'IDC4U', name:'Interdisciplinary Studies'},
+    {code:'IDP4U', name:'Interdisciplinary Studies (package of part courses)'}]]
+];
+
+const UNI_FIELDS = [
+  ['Engineering and Computing', [
+    {id:'eng', name:'Engineering', req:['ENG4U','MHF4U','MCV4U','SCH4U','SPH4U']},
+    {id:'cs', name:'Computer Science', req:['ENG4U','MHF4U','MCV4U'], note:'ICS4U is recommended, rarely required.'},
+    {id:'math', name:'Mathematics and Statistics', req:['ENG4U','MHF4U','MCV4U']},
+    {id:'arch', name:'Architecture', req:['ENG4U','SPH4U',G(1,['MHF4U','MCV4U'])], note:'Most schools also ask for a portfolio.'}]],
+  ['Science', [
+    {id:'life', name:'Life Sciences and Biology', req:['ENG4U','SBI4U','SCH4U',G(1,['MHF4U','MCV4U'])]},
+    {id:'biomed', name:'Biomedical and Medical Sciences', req:['ENG4U','MHF4U','MCV4U','SBI4U','SCH4U']},
+    {id:'phys', name:'Physical Sciences (Physics, Chemistry)', req:['ENG4U','MHF4U','MCV4U',G(2,['SCH4U','SPH4U','SBI4U'])]},
+    {id:'env', name:'Environmental Science', req:['ENG4U',G(1,['MHF4U','MCV4U']),G(2,['SBI4U','SCH4U','SPH4U','SES4U'])]},
+    {id:'psysc', name:'Psychology (BSc)', req:['ENG4U','SBI4U',G(1,['MHF4U','MCV4U'])], note:'Some schools also want SCH4U.'}]],
+  ['Health', [
+    {id:'hsci', name:'Health Sciences', req:['ENG4U','SBI4U','SCH4U',G(1,MATH)], note:'Often needs a supplementary application.'},
+    {id:'nurs', name:'Nursing', req:['ENG4U','SBI4U','SCH4U',G(1,MATH)], note:'Many schools also require the Casper test.'},
+    {id:'kin', name:'Kinesiology', req:['ENG4U','SBI4U',G(1,MATH)], note:'PSK4U is recommended.'},
+    {id:'nutr', name:'Food and Nutrition', req:['ENG4U','SBI4U','SCH4U']}]],
+  ['Business', [
+    {id:'comm', name:'Commerce and Business Administration', req:['ENG4U','MHF4U',G(1,['MCV4U','MDM4U'])], note:'The most competitive programs insist on MCV4U.'},
+    {id:'acct', name:'Accounting and Finance', req:['ENG4U','MHF4U','MCV4U']},
+    {id:'econ', name:'Economics', req:['ENG4U','MHF4U','MCV4U']},
+    {id:'mgmt', name:'Business Management', req:['ENG4U',G(1,MATH)]}]],
+  ['Social Sciences', [
+    {id:'psy', name:'Psychology (BA)', req:['ENG4U']},
+    {id:'soc', name:'Sociology and Political Science', req:['ENG4U']},
+    {id:'crim', name:'Criminology and Legal Studies', req:['ENG4U']},
+    {id:'sw', name:'Social Work', req:['ENG4U']},
+    {id:'edu', name:'Concurrent Education', req:['ENG4U'], note:'Often needs an experience profile. Teaching subjects add their own prerequisites.'}]],
+  ['Arts and Humanities', [
+    {id:'hum', name:'English, History and Philosophy', req:['ENG4U']},
+    {id:'media', name:'Communications and Media', req:['ENG4U']},
+    {id:'journ', name:'Journalism', req:['ENG4U']},
+    {id:'fren', name:'French Studies', req:['ENG4U',G(1,['FSF4U','FEF4U','FIF4U'])]},
+    {id:'art', name:'Visual Arts', req:['ENG4U'], note:'Portfolio required. AVI4M is recommended.'},
+    {id:'mus', name:'Music', req:['ENG4U','AMU4M'], note:'Audition required.'},
+    {id:'thea', name:'Drama and Theatre', req:['ENG4U'], note:'Audition or interview at most schools. ADA4M is recommended.'}]]
+];
+
+const ENG = G(1,['ENG4C','ENG4U']);
+const CMATH = G(1,['MAP4C','MCT4C','MHF4U','MDM4U']);
+const GMATH = G(1,['MBF3C','MCF3M','MCR3U']);   // any Grade 11 or 12 math
+const BIO = G(1,['SBI3C','SBI3U']);
+const CHEM = G(1,['SCH4C','SCH3U']);
+const PORT = 'Some colleges also ask for a portfolio or a senior visual or media arts credit, and some for Grade 11 math.';
+
+const COL_FIELDS = [
+  ['Health and Community Services', [
+    {id:'c-pn', name:'Practical Nursing', req:[ENG,CMATH,BIO,CHEM], note:'Some colleges accept physics in place of chemistry.'},
+    {id:'c-para', name:'Paramedic', req:[ENG,CMATH,BIO,CHEM], note:'Some colleges accept physics in place of chemistry. Also needs a driver\u2019s licence, and usually a fitness test.'},
+    {id:'c-dh', name:'Dental Hygiene', req:[ENG,CMATH,BIO,CHEM]},
+    {id:'c-pharm', name:'Pharmacy Technician', req:[ENG,CMATH,BIO,CHEM]},
+    {id:'c-vet', name:'Veterinary Technician', req:[ENG,CMATH,BIO,CHEM]},
+    {id:'c-fit', name:'Fitness and Health Promotion', req:[ENG], note:'Grade 11 or 12 biology is recommended.'},
+    {id:'c-ece', name:'Early Childhood Education', req:[ENG]},
+    {id:'c-ssw', name:'Social Service Worker', req:[ENG]},
+    {id:'c-cyc', name:'Child and Youth Care', req:[ENG]},
+    {id:'c-pol', name:'Police Foundations', req:[ENG]}]],
+  ['Business and Hospitality', [
+    {id:'c-bus', name:'Business Administration', req:[ENG,GMATH], note:'Covers marketing, human resources and finance streams. Some colleges ask for Grade 12 math.'},
+    {id:'c-acc', name:'Accounting', req:[ENG,GMATH], note:'Some colleges ask for Grade 12 math.'},
+    {id:'c-law', name:'Law Clerk and Paralegal', req:[ENG]},
+    {id:'c-hosp', name:'Hospitality and Tourism Management', req:[ENG]},
+    {id:'c-cul', name:'Culinary Management', req:[ENG]},
+    {id:'c-cook', name:'Cook (Culinary Skills)', req:[ENG]},
+    {id:'c-bake', name:'Baker (Baking and Pastry Arts)', req:[ENG]}]],
+  ['Technology', [
+    {id:'c-prog', name:'Computer Programming', req:[ENG,CMATH]},
+    {id:'c-it', name:'Computer Systems Technician', req:[ENG,CMATH], note:'Some colleges accept Grade 11 math.'},
+    {id:'c-engt', name:'Engineering Technology (Civil, Mechanical, Electrical)', req:[ENG,CMATH], note:'Some colleges set a minimum grade for MAP4C or accept Grade 11 math. Grade 12 physics is recommended.'},
+    {id:'c-arch', name:'Architectural Technology', req:[ENG,CMATH]},
+    {id:'c-bio', name:'Biotechnology and Chemical Laboratory', req:[ENG,CMATH,CHEM], note:'Varies widely. Some colleges also require biology, and others only recommend the sciences.'},
+    {id:'c-env', name:'Environmental Technician', req:[ENG,CMATH], note:'Grade 11 or 12 science is strongly recommended.'}]],
+  ['Skilled Trades', [
+    {id:'c-elec', name:'Electrician (Electrical Techniques)', req:[ENG,CMATH], note:'Some colleges ask for English only.'},
+    {id:'c-plumb', name:'Plumber (Plumbing Techniques)', req:[ENG], note:'Some colleges also ask for Grade 12 math.'},
+    {id:'c-hvac', name:'HVAC (Heating, Refrigeration and Air Conditioning)', req:[ENG,GMATH], note:'Some colleges ask for Grade 12 math, and some set a minimum grade for MAP4C.'},
+    {id:'c-carp', name:'Carpentry and Renovation', req:[ENG,CMATH]},
+    {id:'c-auto', name:'Automotive and Motive Power Technician', req:[ENG,CMATH], note:'Some colleges accept Grade 11 math.'}]],
+  ['Creative and Media', [
+    {id:'c-gd', name:'Graphic Design', req:[ENG], note:PORT},
+    {id:'c-game', name:'Game Art and Interactive Media', req:[ENG], note:PORT},
+    {id:'c-jour', name:'Journalism and Broadcasting', req:[ENG], note:'Not checked against a college page.'}]]
+];
+
+const SECTIONS = [
+  {kind:'u', title:'University programs', sub:'Degrees. Need six Grade 12 U/M credits.', fields:UNI_FIELDS},
+  {kind:'c', title:'College programs', sub:'Ontario college diplomas. Need an OSSD with the courses shown, college (C) or university (U) level.', fields:COL_FIELDS}
+];
+
+const PRESETS = {
+  eng:['ENG4U','MHF4U','MCV4U','SCH4U','SPH4U','ICS4U'],
+  life:['ENG4U','MHF4U','SBI4U','SCH4U','PSK4U','HSB4U'],
+  biz:['ENG4U','MHF4U','MCV4U','BAT4M','CIA4U','BBB4M'],
+  arts:['ENG4U','EWC4U','CHY4U','HZT4U','CLN4U','FSF4U'],
+  chealth:['ENG4C','MAP4C','SBI3C','SCH4C'],
+  ctech:['ENG4C','MCT4C','SPH4C'],
+  none:[]
+};
+const KEY = 'ontario-pathways-selection';
+
+const $ = id => document.getElementById(id);
+const el = (tag, cls, text) => { const n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; };
+
+const selected = new Set();
+const courseEl = {};      // code -> label.row
+const parentOf = {};      // code -> course it builds on
+const kidsOf = {};        // inverse of parentOf
+const programs = [];
+const progEl = {};
+const edges = [];         // {c, p, path}
+let hot = null;           // {type:'c'|'p', id}
+let show = 'u';
+const nodeLi = {};        // code -> li
+const blocks = [];        // {h, ul, nodes} per subject
+const reqBy = {u:new Set(), c:new Set()};
+
+const reqCodes = r => typeof r === 'string' ? [r] : r.of;
+const required = new Set();
+SECTIONS.forEach(s => s.fields.forEach(([, list]) => list.forEach(p => {
+  p.kind = s.kind;
+  programs.push(p);
+  p.req.forEach(r => reqCodes(r).forEach(c => { required.add(c); reqBy[s.kind].add(c); }));
+})));
+
+// Grade 12 U/M (or Level 3 U language) credits are the ones universities count
+const isUM12 = c => /^...4[UM]$/.test(c) || /^L..DU/.test(c);
+
+function buildNode(node, parent) {
+  const li = el('li');
+  nodeLi[node.code] = li;
+  const row = el('label', 'row' + (node.g === 11 ? ' g11' : '') + (required.has(node.code) || node.g === 11 ? '' : ' elective'));
+  const cb = el('input'); cb.type = 'checkbox'; cb.id = 'c-' + node.code;
+  cb.addEventListener('change', () => toggle(node.code, cb.checked));
+  row.append(cb, el('span', 'code', node.code), el('span', 'cname', node.name));
+  row.append(el('span', 'tag', node.tag || (node.g === 11 ? 'Gr 11' : 'Gr 12')));
+  row.addEventListener('mouseenter', () => setHot({type:'c', id:node.code}));
+  row.addEventListener('mouseleave', () => setHot(null));
+  courseEl[node.code] = row;
+  if (parent) { parentOf[node.code] = parent.code; (kidsOf[parent.code] ||= []).push(node.code); }
+  li.append(row);
+  if (node.kids) { const ul = el('ul'); node.kids.forEach(k => ul.append(buildNode(k, node))); li.append(ul); }
+  return li;
+}
+
+function buildCourses() {
+  const root = $('courses');
+  SUBJECTS.forEach(([name, nodes]) => {
+    const h = el('h2', 'grp', name), ul = el('ul', 'tree');
+    nodes.forEach(n => ul.append(buildNode(n, null)));
+    root.append(h, ul);
+    blocks.push({h, ul, nodes});
+  });
+}
+
+// University track: U/M courses. College track: only courses a college program asks for.
+function showNode(node, t) {
+  const kidsVis = (node.kids || []).map(k => showNode(k, t)).some(Boolean);
+  const self = t === 'c' ? reqBy.c.has(node.code) : (!node.kids && !/C$/.test(node.code));
+  const li = nodeLi[node.code], ul = li.querySelector(':scope > ul');
+  li.hidden = !(kidsVis || self);
+  if (ul) ul.hidden = !kidsVis;
+  return kidsVis || self;
+}
+
+function setTrack(t) {
+  show = t;
+  document.querySelectorAll('#tracks button').forEach(b => b.setAttribute('aria-pressed', b.dataset.show === t));
+  blocks.forEach(b => { const v = b.nodes.map(n => showNode(n, t)).some(Boolean); b.h.hidden = !v; b.ul.hidden = !v; });
+  document.querySelectorAll('.sec').forEach(sec => { sec.hidden = sec.dataset.kind !== t; });
+  document.querySelectorAll('#presets [data-track]').forEach(b => { b.hidden = b.dataset.track !== t; });
+  $('credits').hidden = t !== 'u';
+  $('map').classList.toggle('pin', t === 'c');
+  try { localStorage.setItem(KEY + '-track', t); } catch (e) {}
+  update();
+}
+
+function buildPrograms() {
+  const root = $('progs');
+  SECTIONS.forEach(s => {
+    const sec = el('section', 'sec'); sec.dataset.kind = s.kind;
+    sec.append(el('h2', 'sechead', s.title), el('p', 'secsub', s.sub));
+    s.fields.forEach(([name, list]) => {
+      sec.append(el('h3', 'grp', name));
+      list.forEach(p => {
+        const card = el('article', 'prog');
+        const head = el('div', 'prog-head');
+        head.append(el('h4', '', p.name), el('span', 'status'));
+        card.append(head, el('div', 'chips'));
+        if (p.note) card.append(el('p', 'note', p.note));
+        const add = el('button', 'add', 'Add missing courses'); add.type = 'button';
+        add.addEventListener('click', () => addMissing(p));
+        card.append(add);
+        card.addEventListener('mouseenter', () => setHot({type:'p', id:p.id}));
+        card.addEventListener('mouseleave', () => setHot(null));
+        sec.append(card);
+        progEl[p.id] = card;
+        p.req.forEach(r => reqCodes(r).forEach(c => edges.push({c, p: p.id})));
+      });
+    });
+    root.append(sec);
+  });
+  const svg = $('wires');
+  edges.forEach(e => {
+    e.path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    svg.append(e.path);
+  });
+}
+
+const itemMet = r => typeof r === 'string' ? selected.has(r) : r.of.filter(c => selected.has(c)).length >= r.n;
+const missing = p => p.req.filter(r => !itemMet(r));
+
+function select(code) { selected.add(code); if (parentOf[code]) select(parentOf[code]); }
+function deselect(code) { selected.delete(code); (kidsOf[code] || []).forEach(deselect); }
+function toggle(code, on) { on ? select(code) : deselect(code); save(); update(); }
+
+function addMissing(p) {
+  missing(p).forEach(r => {
+    if (typeof r === 'string') return select(r);
+    let need = r.n - r.of.filter(c => selected.has(c)).length;
+    r.of.forEach(c => { if (need > 0 && !selected.has(c)) { select(c); need--; } });
+  });
+  save(); update();
+}
+
+function setHot(h) { hot = h; paint(); }
+
+function update() {
+  Object.entries(courseEl).forEach(([code, row]) => {
+    const on = selected.has(code);
+    row.classList.toggle('sel', on);
+    row.querySelector('input').checked = on;
+  });
+  const open = {u:0, c:0}, total = {u:0, c:0};
+  programs.forEach(p => {
+    const card = progEl[p.id], miss = missing(p), ok = miss.length === 0;
+    p.open = ok; total[p.kind]++; if (ok) open[p.kind]++;
+    card.classList.toggle('open', ok);
+    card.classList.toggle('closed', !ok);
+    card.querySelector('.status').textContent = ok ? '✓ Open' : 'Missing ' + miss.length;
+    const chips = card.querySelector('.chips');
+    chips.textContent = '';
+    p.req.forEach(r => {
+      const chip = el('span', 'chip ' + (itemMet(r) ? 'met' : 'miss'));
+      if (typeof r === 'string') chip.textContent = r;
+      else { chip.append(el('em', '', (r.n === 1 ? 'one of ' : 'two of '))); chip.append(r.of.join(' · ')); }
+      if (typeof r !== 'string' && r.n === 1 && itemMet(r)) chip.textContent = r.of.find(c => selected.has(c) && !(kidsOf[c] || []).some(k => selected.has(k) && r.of.includes(k)));
+      chips.append(chip);
+    });
+  });
+  $('openN').textContent = open[show]; $('totalN').textContent = total[show];
+  $('kindWord').textContent = show === 'u' ? 'university' : 'college';
+
+  const n = [...selected].filter(isUM12).length, pips = $('pips');
+  pips.textContent = '';
+  for (let i = 0; i < 6; i++) pips.append(el('i', i < n ? 'f' : ''));
+  $('creditText').textContent = n < 6
+    ? n + ' of the 6 Grade 12 U/M credits universities need'
+    : n === 6 ? '6 of 6 Grade 12 U/M credits for university' : n + ' U/M credits. Universities count your best six.';
+  paint();
+  draw();
+}
+
+function paint() {
+  const svg = $('wires');
+  svg.classList.toggle('has-hot', !!hot);
+  Object.values(courseEl).forEach(r => r.classList.remove('need'));
+  const byId = Object.fromEntries(programs.map(p => [p.id, p]));
+  edges.forEach(e => {
+    const sel = selected.has(e.c), p = byId[e.p];
+    const isHot = hot && (hot.type === 'c' ? hot.id === e.c : hot.id === e.p);
+    // a wire is "wanted" when the hovered program still needs this course
+    const group = p.req.find(r => typeof r === 'string' ? r === e.c : r.of.includes(e.c));
+    const want = isHot && !sel && !itemMet(group);
+    e.path.setAttribute('class', 'e' + (sel ? (p.open ? ' on' : ' part') : '') + (isHot ? ' hot' : '') + (want ? ' want' : ''));
+    if (want && hot.type === 'p') courseEl[e.c].classList.add('need');
+  });
+}
+
+function draw() {
+  const map = $('map'), svg = $('wires');
+  if (getComputedStyle(svg).display === 'none') return;
+  const m = map.getBoundingClientRect();
+  svg.setAttribute('width', m.width); svg.setAttribute('height', m.height);
+  const x1 = document.querySelector('.courses').getBoundingClientRect().right - m.left + 4;
+  edges.forEach(e => {
+    const a = courseEl[e.c].getBoundingClientRect(), b = progEl[e.p].getBoundingClientRect();
+    e.path.style.display = a.width && b.width ? '' : 'none';
+    if (!a.width || !b.width) return;
+    const y1 = a.top + a.height / 2 - m.top, x2 = b.left - m.left - 2, y2 = b.top + b.height / 2 - m.top;
+    const dx = (x2 - x1) * 0.5;
+    e.path.setAttribute('d', `M${x1},${y1} C${x1 + dx},${y1} ${x2 - dx},${y2} ${x2},${y2}`);
+  });
+}
+
+function save() { try { localStorage.setItem(KEY, JSON.stringify([...selected])); } catch (e) {} }
+function load() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(KEY));
+    if (Array.isArray(raw)) return raw.filter(c => courseEl[c]);
+  } catch (e) {}
+  return null;
+}
+
+buildCourses();
+buildPrograms();
+(load() || PRESETS.life).forEach(select);
+$('presets').addEventListener('click', ev => {
+  const k = ev.target.dataset && ev.target.dataset.preset;
+  if (!k) return;
+  selected.clear(); PRESETS[k].forEach(select); save(); update();
+});
+$('tracks').addEventListener('click', ev => {
+  const b = ev.target.closest('button[data-show]');
+  if (b) setTrack(b.dataset.show);
+});
+let startTrack = 'u';
+try { if (localStorage.getItem(KEY + '-track') === 'c') startTrack = 'c'; } catch (e) {}
+if (location.hash === '#college') startTrack = 'c';
+if (location.hash === '#university') startTrack = 'u';
+setTrack(startTrack);
+new ResizeObserver(draw).observe($('map'));
+let ticking = false;
+addEventListener('scroll', () => {
+  if (show !== 'c' || ticking) return;
+  ticking = true;
+  requestAnimationFrame(() => { ticking = false; draw(); });
+}, {passive: true});
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(draw);
+</script>
+</body>
+</html>
