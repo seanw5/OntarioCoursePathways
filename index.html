@@ -97,11 +97,20 @@ label.row.elective .code{font-weight:500}
 .chip.met{background:var(--accent-soft);color:var(--accent)}
 .chip.miss{border:1px dashed var(--dim);color:var(--muted)}
 .note{margin:0;font-size:12.5px;color:var(--muted)}
+.grpsub{margin:0 0 8px;color:var(--muted);font-size:13px}
+.ptag{margin:-2px 0 0;font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--warn);font-weight:600}
+.plabel{margin:4px 0 -2px;font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600}
+.feeds .chip{font-family:var(--body);font-size:12px}
+.steps{margin:0;padding-left:18px;font-size:12.5px;display:grid;gap:3px}
+.prog.pro{border-style:double;border-width:3px}
+.prog.closed .steps,.prog.closed .plabel,.prog.closed .ptag{color:var(--dim)}
+.careers{margin:0;font-size:12.5px;border-top:1px solid var(--line);padding-top:6px}
+.clabel{font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600;margin-right:8px}
 .prog .add{justify-self:start;font-size:12.5px;padding:3px 10px}
 .prog.open{background:var(--surface);border-color:var(--accent)}
 .prog.open .status{color:var(--accent)}
 .prog.open .add{display:none}
-.prog.closed h4,.prog.closed .note{color:var(--dim)}
+.prog.closed h4,.prog.closed .note,.prog.closed .careers,.prog.closed .clabel{color:var(--dim)}
 .prog.closed .status{color:var(--dim)}
 .prog.closed .chip.met{opacity:.7}
 .prog.closed:hover,.prog.closed:focus-within{border-color:var(--warn)}
@@ -172,6 +181,9 @@ footer p{margin:0 0 8px}
   <footer>
     <p><strong>What this covers.</strong> The Grade 12 university (U) and university/college (M) courses that Ontario universities count toward admission, the college (C) courses that college programs name as prerequisites, and the Grade 11 course each one builds on. Course codes, titles and prerequisite links match the Ministry of Education's Course Descriptions and Prerequisites listing (updated August 2026). Focus courses in the arts and emphasis courses in technology use variant codes and are not listed separately. Workplace, open and other college-level courses are left out. They count toward the diploma but are not named as program prerequisites.</p>
     <p><strong>Compulsory courses.</strong> Grade 11 and Grade 12 English are compulsory for the Ontario diploma, so one English course in each grade is always ticked. The university track locks the university-level course. The college track lets you swap between college and university level. The diploma also needs one Grade 11 or 12 math credit, but any math course satisfies it, so none is ticked for you.</p>
+    <p><strong>Becoming a teacher.</strong> Ontario classroom teachers need a university degree plus a Bachelor of Education. Concurrent Education does both together from high school. Most teachers instead finish any degree first and then apply to a two-year Bachelor of Education, so almost any university program here can lead to teaching. College programs lead to early childhood educator and educational assistant roles, not to a teaching licence.</p>
+    <p><strong>Careers.</strong> Each program lists five common careers its graduates go into. They are typical destinations, not an official ranking, and are not drawn from employment statistics. Careers marked with a further step, such as medical school, an apprenticeship or a Bachelor of Education, need that step after the program.</p>
+    <p><strong>Professional schools.</strong> Medicine, dentistry, pharmacy, veterinary medicine, law and the MBA are entered after university study, not from high school. Their cards show the high school courses that keep the usual first degrees open, then the later steps. They are not counted in the number of programs open. Admission tests, required university courses and seat numbers change, so check each school.</p>
     <p><strong>What it does not cover.</strong> Prerequisites shown are the typical set across Ontario universities and Ontario public colleges. College programs elsewhere in Canada set requirements against their own province's courses. A university-level course always satisfies a college-level requirement in the same subject, and where a college asks for Grade 11 or 12 biology or chemistry, the Grade 12 U course counts too. Individual schools differ, and some add minimum grades, supplementary applications, portfolios or auditions. Every university program also needs six Grade 12 U/M credits and a competitive average. College prerequisites were checked in October 2026 against program pages at Durham, Georgian, Mohawk, Conestoga and Lambton colleges. The skilled trades and cook and baker entries are the college programs that prepare for those trades. Licensing as an electrician, plumber or refrigeration mechanic comes through an apprenticeship, which has its own entry rules. ontariocolleges.ca does not list course prerequisites itself and sends applicants to each college's page. Confirm on OUInfo or the school's own admissions page before choosing courses. French-language programs accept FRA4U in place of ENG4U.</p>
   </footer>
 </div>
@@ -265,6 +277,8 @@ const SUBJECTS = [
     {code:'IDP4U', name:'Interdisciplinary Studies (package of part courses)'}]]
 ];
 
+const SCIMATH = G(1,['MHF4U','MCV4U']);
+
 const UNI_FIELDS = [
   ['Engineering and Computing', [
     {id:'eng', name:'Engineering', req:['ENG4U','MHF4U','MCV4U','SCH4U','SPH4U']},
@@ -284,7 +298,7 @@ const UNI_FIELDS = [
     {id:'psysc', name:'Psychology (BSc)', req:['ENG4U','SBI4U',G(1,['MHF4U','MCV4U'])], note:'Some schools also want SCH4U.'}]],
   ['Health', [
     {id:'hsci', name:'Health Sciences', req:['ENG4U','SBI4U','SCH4U',G(1,MATH)], note:'Often needs a supplementary application.'},
-    {id:'nurs', name:'Nursing', req:['ENG4U','SBI4U','SCH4U',G(1,MATH)], note:'Many schools also require the Casper test.'},
+    {id:'nurs', name:'Nursing (BScN)', req:['ENG4U','SBI4U','SCH4U',G(1,MATH)], note:'Four-year degree leading to Registered Nurse. Western and Toronto Metropolitan accept Grade 11 U/M math instead. Many schools also require the Casper test.'},
     {id:'kin', name:'Kinesiology', req:['ENG4U','SBI4U',G(1,MATH)], note:'PSK4U is recommended.'},
     {id:'nutr', name:'Food and Nutrition', req:['ENG4U','SBI4U','SCH4U']}]],
   ['Business', [
@@ -296,8 +310,11 @@ const UNI_FIELDS = [
     {id:'psy', name:'Psychology (BA)', req:['ENG4U']},
     {id:'soc', name:'Sociology and Political Science', req:['ENG4U']},
     {id:'crim', name:'Criminology and Legal Studies', req:['ENG4U']},
-    {id:'sw', name:'Social Work', req:['ENG4U']},
-    {id:'edu', name:'Concurrent Education', req:['ENG4U'], note:'Often needs an experience profile. Teaching subjects add their own prerequisites.'}]],
+    {id:'sw', name:'Social Work', req:['ENG4U']}]],
+  ['Education and Teaching', [
+    {id:'edu', name:'Concurrent Education (Primary and Junior teaching)', req:['ENG4U'], note:'Teaching degree taken alongside an arts or science degree, whose prerequisites also apply. Nipissing also asks for Grade 11 U/M math. Often needs an experience profile.'},
+    {id:'edusci', name:'Concurrent Education (Math and Science teaching)', req:['ENG4U','MHF4U',G(2,['MCV4U','SBI4U','SCH4U','SPH4U'])], note:'Follows the paired science degree, so it varies by university. This set is typical and was not checked against a university page.'},
+    {id:'ecs', name:'Early Childhood Studies', req:['ENG4U'], note:'Toronto Metropolitan also asks for one Grade 11 or 12 U/M math or science course.'}]],
   ['Arts and Humanities', [
     {id:'hum', name:'English, History and Philosophy', req:['ENG4U']},
     {id:'media', name:'Communications and Media', req:['ENG4U']},
@@ -305,7 +322,27 @@ const UNI_FIELDS = [
     {id:'fren', name:'French Studies', req:['ENG4U',G(1,['FSF4U','FEF4U','FIF4U'])]},
     {id:'art', name:'Visual Arts', req:['ENG4U'], note:'Portfolio required. AVI4M is recommended.'},
     {id:'mus', name:'Music', req:['ENG4U','AMU4M'], note:'Audition required.'},
-    {id:'thea', name:'Drama and Theatre', req:['ENG4U'], note:'Audition or interview at most schools. ADA4M is recommended.'}]]
+    {id:'thea', name:'Drama and Theatre', req:['ENG4U'], note:'Audition or interview at most schools. ADA4M is recommended.'}]],
+  ['Professional schools', [
+    {id:'med', pro:true, name:'Medicine (MD)', req:['ENG4U','SBI4U','SCH4U',SCIMATH], feeders:['life','biomed','hsci','kin','nurs'],
+      steps:['University degree, 3 to 4 years, in any subject','MCAT for Toronto, Western and Queen\u2019s. McMaster uses the reading section only. Ottawa, NOSM and Toronto Metropolitan do not require it','Medical school (MD), 3 to 4 years','Residency, 2 to 5 or more years'],
+      note:'SPH4U and MCV4U are recommended. They help with the MCAT and keep more science degrees open. Most schools accept any degree, though Toronto and Ottawa require some university science courses. Queen\u2019s has a ten-seat route from high school (QuARMS), open to Black and Indigenous students.'},
+    {id:'dent', pro:true, name:'Dentistry (DDS)', req:['ENG4U','SBI4U','SCH4U',SCIMATH], feeders:['life','biomed','hsci','kin'],
+      steps:['University, at least 3 years. Toronto requires biochemistry, physiology and biology courses','Dental Aptitude Test (DAT)','Dental school (DDS), 4 years at Toronto or Western','Licensing exam'],
+      note:'SPH4U is recommended. Western advises university physics, chemistry and biology labs.'},
+    {id:'pharm', pro:true, name:'Pharmacy (PharmD)', req:['ENG4U','SBI4U','SCH4U','MHF4U','MCV4U'], feeders:['life','biomed','phys'],
+      steps:['University science, at least 2 years, with required biology, chemistry, calculus and statistics courses','Pharmacy school (PharmD), 4 years at Toronto or Waterloo','Licensing exams and registration'],
+      note:'MCV4U matters here because university calculus is a required course.'},
+    {id:'vet', pro:true, name:'Veterinary Medicine (DVM)', req:['ENG4U','SBI4U','SCH4U',SCIMATH], feeders:['life','biomed','env'],
+      steps:['University science, at least 2 years, with required cell biology, biochemistry, genetics and statistics courses','Casper test, plus experience working with veterinarians','Veterinary school (DVM), 4 years at Guelph','Licensing exam'],
+      note:'Guelph is the only veterinary school in Ontario and admits Ontario residents.'},
+    {id:'law', pro:true, name:'Law (JD)', req:['ENG4U'], feeders:['hum','soc','crim','comm','econ'],
+      steps:['University degree, at least 3 years, in any subject','LSAT','Law school (JD), 3 years','Bar exams and articling'],
+      note:'No specific high school or university courses are required. Strong reading and writing courses help.'},
+    {id:'mba', pro:true, name:'Business (MBA)', req:['ENG4U'], feeders:['comm','acct','econ','mgmt','eng'],
+      steps:['University degree in any subject','Work experience, usually 2 or more years','GMAT or GRE at most schools','MBA, 1 to 2 years'],
+      note:'No specific courses are required. A Grade 12 U math keeps business and economics degrees open.'}],
+    'You cannot enter these from high school. Each needs university study first. A card shows as on track when your courses meet the high school prerequisites of its usual first degrees.']
 ];
 
 const ENG = G(1,['ENG4C','ENG4U']);
@@ -316,14 +353,19 @@ const CHEM = G(1,['SCH4C','SCH3U']);
 const PORT = 'Some colleges also ask for a portfolio or a senior visual or media arts credit, and some for Grade 11 math.';
 
 const COL_FIELDS = [
-  ['Health and Community Services', [
-    {id:'c-pn', name:'Practical Nursing', req:[ENG,CMATH,BIO,CHEM], note:'Some colleges accept physics in place of chemistry.'},
+  ['Nursing and Health', [
+    {id:'c-pn', name:'Practical Nursing', req:[ENG,CMATH,BIO,CHEM], note:'Two-year diploma leading to Registered Practical Nurse. Some colleges accept physics in place of chemistry.'},
+    {id:'c-bscn', name:'Nursing Degree (BScN) at a College', req:['ENG4U','SBI4U','SCH4U',G(1,MATH)], note:'Four-year degree at Humber, Seneca, Georgian and others. Needs university-level courses and six Grade 12 U/M credits.'},
+    {id:'c-psw', name:'Personal Support Worker', req:[ENG]},
+    {id:'c-preh', name:'Pre-Health Sciences (pathway to nursing)', req:[ENG,GMATH], note:'One-year upgrading route into nursing and other health programs. Georgian asks for English only, and Humber asks for Grade 12 math.'},
     {id:'c-para', name:'Paramedic', req:[ENG,CMATH,BIO,CHEM], note:'Some colleges accept physics in place of chemistry. Also needs a driver\u2019s licence, and usually a fitness test.'},
     {id:'c-dh', name:'Dental Hygiene', req:[ENG,CMATH,BIO,CHEM]},
     {id:'c-pharm', name:'Pharmacy Technician', req:[ENG,CMATH,BIO,CHEM]},
     {id:'c-vet', name:'Veterinary Technician', req:[ENG,CMATH,BIO,CHEM]},
-    {id:'c-fit', name:'Fitness and Health Promotion', req:[ENG], note:'Grade 11 or 12 biology is recommended.'},
+    {id:'c-fit', name:'Fitness and Health Promotion', req:[ENG], note:'Grade 11 or 12 biology is recommended.'}]],
+  ['Education and Community Services', [
     {id:'c-ece', name:'Early Childhood Education', req:[ENG]},
+    {id:'c-eds', name:'Educational Support (Educational Assistant)', req:[ENG]},
     {id:'c-ssw', name:'Social Service Worker', req:[ENG]},
     {id:'c-cyc', name:'Child and Youth Care', req:[ENG]},
     {id:'c-pol', name:'Police Foundations', req:[ENG]}]],
@@ -357,6 +399,89 @@ const COL_FIELDS = [
     {id:'c-jour', name:'Journalism and Broadcasting', req:[ENG], note:'Not checked against a college page.'}]]
 ];
 
+
+// Five common careers per program. Typical destinations, not an official ranking.
+const CAREERS = {
+  eng:['Civil engineer','Mechanical engineer','Electrical engineer','Software engineer','Project engineer'],
+  cs:['Software developer','Data scientist','Cybersecurity analyst','Machine learning engineer','Systems analyst'],
+  math:['Actuary','Data analyst','Statistician','Financial analyst','Operations research analyst'],
+  arch:['Architect (after a master’s and licensing)','Architectural designer','Urban designer','Building information modeller','Project coordinator'],
+  avsci:['Airline pilot','Commercial pilot','Flight instructor','Flight operations officer','Aviation safety analyst'],
+  avgeo:['Airline pilot','Commercial pilot','Flight instructor','Airport planner','Geospatial analyst'],
+  avtech:['Airline pilot','Commercial pilot','Flight instructor','Flight operations manager','Aviation safety officer'],
+  avmgmt:['Airline operations manager','Airport manager','Commercial pilot (flight stream)','Aviation safety manager','Flight dispatcher'],
+  life:['Research assistant','Laboratory technologist','Physician (after medical school)','Pharmacist (after pharmacy school)','Environmental consultant'],
+  biomed:['Physician (after medical school)','Clinical research coordinator','Biomedical researcher','Dentist (after dental school)','Pharmaceutical sales representative'],
+  phys:['Research scientist','Chemist','Laboratory analyst','Data analyst','Materials scientist'],
+  env:['Environmental consultant','Conservation scientist','Water quality analyst','Sustainability coordinator','Environmental policy analyst'],
+  psysc:['Research assistant','Psychologist (after graduate school)','Behaviour therapist','Mental health worker','User experience researcher'],
+  hsci:['Physician (after medical school)','Physiotherapist (after a master’s)','Public health analyst','Health policy analyst','Clinical research coordinator'],
+  nurs:['Registered nurse','Public health nurse','Emergency or critical care nurse','Nurse practitioner (after a master’s)','Nurse educator'],
+  kin:['Kinesiologist','Physiotherapist (after a master’s)','Athletic therapist','Strength and conditioning coach','Occupational therapist (after a master’s)'],
+  nutr:['Registered dietitian (after accredited training)','Food product developer','Public health nutritionist','Food safety inspector','Quality assurance specialist'],
+  comm:['Financial analyst','Marketing manager','Management consultant','Accountant','Investment banker'],
+  acct:['Chartered Professional Accountant','Auditor','Financial analyst','Tax specialist','Controller'],
+  econ:['Economist','Policy analyst','Financial analyst','Data analyst','Market research analyst'],
+  mgmt:['Operations manager','Human resources specialist','Marketing coordinator','Sales manager','Business analyst'],
+  psy:['Human resources specialist','Mental health worker','Market researcher','Counsellor (after graduate study)','Case manager'],
+  soc:['Policy analyst','Government program officer','Community development worker','Political staffer','Market research analyst'],
+  crim:['Police officer','Probation or parole officer','Lawyer (after law school)','Border services officer','Policy analyst'],
+  sw:['Social worker','Child protection worker','Mental health counsellor','Community outreach worker','Hospital social worker'],
+  edu:['Elementary school teacher','Occasional teacher','Special education teacher','School principal (with experience)','Curriculum consultant'],
+  edusci:['High school math teacher','High school science teacher','Occasional teacher','Department head (with experience)','Curriculum consultant'],
+  ecs:['Registered early childhood educator','Kindergarten teacher (after a BEd)','Child care centre director','Child life specialist','Early intervention specialist'],
+  hum:['Teacher (after a BEd)','Writer or editor','Lawyer (after law school)','Communications specialist','Librarian or archivist (after a master’s)'],
+  media:['Communications specialist','Public relations manager','Social media manager','Content strategist','Marketing coordinator'],
+  journ:['Reporter','Editor','Broadcast journalist','Content producer','Communications officer'],
+  fren:['French teacher (after a BEd)','Translator','Interpreter','Bilingual government officer','Bilingual communications specialist'],
+  art:['Visual artist','Art director','Curator','Illustrator','Art teacher (after a BEd)'],
+  mus:['Performer','Music teacher (after a BEd)','Composer','Music therapist (after graduate study)','Sound designer'],
+  thea:['Actor','Director','Stage manager','Drama teacher (after a BEd)','Arts administrator'],
+  med:['Family physician','Surgeon','Paediatrician','Psychiatrist','Emergency physician'],
+  dent:['General dentist','Orthodontist (after specialty training)','Oral surgeon (after specialty training)','Paediatric dentist (after specialty training)','Public health dentist'],
+  pharm:['Community pharmacist','Hospital pharmacist','Clinical pharmacist','Pharmaceutical industry specialist','Pharmacy owner'],
+  vet:['Small animal veterinarian','Large animal veterinarian','Emergency veterinarian','Veterinary specialist (after a residency)','Public health veterinarian'],
+  law:['Litigation lawyer','Corporate lawyer','Crown attorney','In-house counsel','Judge (with experience)'],
+  mba:['Management consultant','Investment banker','Product manager','Marketing director','General manager'],
+  'c-pn':['Registered practical nurse','Long-term care nurse','Hospital nurse','Home care nurse','Clinic nurse'],
+  'c-bscn':['Registered nurse','Public health nurse','Emergency or critical care nurse','Nurse practitioner (after a master’s)','Nurse educator'],
+  'c-psw':['Personal support worker','Home support worker','Long-term care aide','Hospital patient care aide','Hospice care worker'],
+  'c-preh':['Leads to further study, not directly to a job','Practical nursing student','Nursing degree student','Paramedic student','Dental hygiene student'],
+  'c-para':['Primary care paramedic','Advanced care paramedic (with more training)','Emergency medical dispatcher','Patient transfer attendant','Community paramedic'],
+  'c-dh':['Dental hygienist','Public health dental hygienist','Orthodontic hygienist','Dental sales representative','Dental office manager'],
+  'c-pharm':['Pharmacy technician (community)','Hospital pharmacy technician','Compounding technician','Pharmaceutical production technician','Pharmacy inventory specialist'],
+  'c-vet':['Registered veterinary technician','Animal hospital technician','Laboratory animal technician','Wildlife rehabilitation technician','Veterinary sales representative'],
+  'c-fit':['Personal trainer','Fitness instructor','Recreation programmer','Health and wellness coach','Kinesiology assistant'],
+  'c-ece':['Registered early childhood educator','Kindergarten classroom ECE','Child care centre supervisor','Home child care provider','EarlyON program facilitator'],
+  'c-eds':['Educational assistant','Special needs assistant','Classroom support worker','Child and youth program worker','Respite care worker'],
+  'c-ssw':['Social service worker','Community support worker','Shelter worker','Addictions worker','Case worker'],
+  'c-cyc':['Child and youth care practitioner','Residential youth worker','School-based youth worker','Youth justice worker','Family support worker'],
+  'c-pol':['Police constable','Security officer','Border services officer','Correctional officer','Bylaw enforcement officer'],
+  'c-bus':['Office administrator','Marketing coordinator','Human resources assistant','Sales representative','Small business owner'],
+  'c-acc':['Bookkeeper','Accounting clerk','Payroll administrator','Accounts payable or receivable clerk','Tax preparer'],
+  'c-law':['Law clerk','Paralegal','Legal assistant','Court clerk','Title searcher'],
+  'c-hosp':['Hotel front office manager','Event coordinator','Restaurant manager','Guest services supervisor','Travel consultant'],
+  'c-cul':['Chef','Sous chef','Kitchen manager','Catering manager','Restaurant owner'],
+  'c-cook':['Cook','Line cook','Prep cook','Institutional cook','Apprentice cook (Red Seal route)'],
+  'c-bake':['Baker','Pastry cook','Cake decorator','Bakery production worker','Bakery owner'],
+  'c-prog':['Software developer','Web developer','Mobile app developer','Database developer','Quality assurance tester'],
+  'c-it':['IT support technician','Network technician','Help desk analyst','Systems administrator','Computer repair technician'],
+  'c-engt':['Civil engineering technologist','Mechanical engineering technologist','Electrical engineering technologist','CAD designer','Quality control technologist'],
+  'c-arch':['Architectural technologist','Building information modelling technician','Drafting technician','Building inspector','Construction estimator'],
+  'c-bio':['Laboratory technician','Quality control analyst','Biotechnology technologist','Chemical technician','Research assistant'],
+  'c-env':['Environmental technician','Water and wastewater operator','Field sampling technician','Environmental monitoring technician','Waste management technician'],
+  'c-fly':['Commercial pilot','Airline first officer','Flight instructor','Bush or charter pilot','Air ambulance pilot'],
+  'c-ame':['Aircraft maintenance engineer','Aircraft mechanic','Avionics technician','Aircraft structures technician','Maintenance inspector'],
+  'c-elec':['Electrician (after an apprenticeship)','Electrical apprentice','Industrial electrician','Electrical maintenance worker','Solar or alarm installer'],
+  'c-plumb':['Plumber (after an apprenticeship)','Plumbing apprentice','Steamfitter or pipefitter','Gas fitter','Drain technician'],
+  'c-hvac':['HVAC technician','Refrigeration and air conditioning mechanic','Gas technician','Building systems technician','HVAC installer'],
+  'c-carp':['Carpenter (after an apprenticeship)','Carpentry apprentice','Renovation technician','Framer','Cabinetmaker'],
+  'c-auto':['Automotive service technician','Truck and coach technician','Service advisor','Parts specialist','Heavy equipment technician'],
+  'c-gd':['Graphic designer','Brand designer','Web designer','Packaging designer','Production artist'],
+  'c-game':['Game artist','3D modeller','Animator','User interface designer','Level designer'],
+  'c-jour':['Reporter','Radio or television broadcaster','Video producer','Podcast producer','Social media content creator']
+};
+
 const SECTIONS = [
   {kind:'u', title:'University programs', sub:'Degrees. Need six Grade 12 U/M credits.', fields:UNI_FIELDS},
   {kind:'c', title:'College programs', sub:'Ontario college diplomas. Need an OSSD with the courses shown, college (C) or university (U) level.', fields:COL_FIELDS}
@@ -381,6 +506,7 @@ const courseEl = {};      // code -> label.row
 const parentOf = {};      // code -> course it builds on
 const kidsOf = {};        // inverse of parentOf
 const programs = [];
+const PROG = {};          // id -> program
 const progEl = {};
 const edges = [];         // {c, p, path}
 let hot = null;           // {type:'c'|'p', id}
@@ -456,14 +582,30 @@ function buildPrograms() {
   SECTIONS.forEach(s => {
     const sec = el('section', 'sec'); sec.dataset.kind = s.kind;
     sec.append(el('h2', 'sechead', s.title), el('p', 'secsub', s.sub));
-    s.fields.forEach(([name, list]) => {
+    s.fields.forEach(([name, list, sub]) => {
       sec.append(el('h3', 'grp', name));
+      if (sub) sec.append(el('p', 'grpsub', sub));
       list.forEach(p => {
-        const card = el('article', 'prog');
+        const card = el('article', 'prog' + (p.pro ? ' pro' : ''));
+        PROG[p.id] = p;
         const head = el('div', 'prog-head');
         head.append(el('h4', '', p.name), el('span', 'status'));
-        card.append(head, el('div', 'chips'));
+        card.append(head);
+        if (p.pro) card.append(el('p', 'ptag', 'After a first degree'), el('p', 'plabel', 'High school courses'));
+        card.append(el('div', 'chips'));
         if (p.note) card.append(el('p', 'note', p.note));
+        if (p.pro) {
+          const feeds = el('div', 'chips feeds');
+          p.feedEls = p.feeders.map(id => { const c = el('span', 'chip'); c.dataset.id = id; feeds.append(c); return c; });
+          const steps = el('ol', 'steps');
+          p.steps.forEach(t => steps.append(el('li', '', t)));
+          card.append(el('p', 'plabel', 'Common first degrees'), feeds, el('p', 'plabel', 'Steps after high school'), steps);
+        }
+        if (CAREERS[p.id]) {
+          const c = el('p', 'careers');
+          c.append(el('span', 'clabel', 'Careers'), CAREERS[p.id].join(' \u00b7 '));
+          card.append(c);
+        }
         const add = el('button', 'add', 'Add missing courses'); add.type = 'button';
         add.addEventListener('click', () => addMissing(p));
         card.append(add);
@@ -517,10 +659,10 @@ function update() {
   const open = {u:0, c:0}, total = {u:0, c:0};
   programs.forEach(p => {
     const card = progEl[p.id], miss = missing(p), ok = miss.length === 0;
-    p.open = ok; total[p.kind]++; if (ok) open[p.kind]++;
+    p.open = ok; if (!p.pro) { total[p.kind]++; if (ok) open[p.kind]++; }
     card.classList.toggle('open', ok);
     card.classList.toggle('closed', !ok);
-    card.querySelector('.status').textContent = ok ? '✓ Open' : 'Missing ' + miss.length;
+    card.querySelector('.status').textContent = ok ? (p.pro ? '✓ On track' : '✓ Open') : 'Missing ' + miss.length;
     const chips = card.querySelector('.chips');
     chips.textContent = '';
     p.req.forEach(r => {
@@ -531,6 +673,11 @@ function update() {
       chips.append(chip);
     });
   });
+  programs.forEach(p => (p.feedEls || []).forEach(c => {
+    const f = PROG[c.dataset.id];
+    c.textContent = f.name;
+    c.className = 'chip ' + (f.open ? 'met' : 'miss');
+  }));
   $('openN').textContent = open[show]; $('totalN').textContent = total[show];
   $('kindWord').textContent = show === 'u' ? 'university' : 'college';
 
