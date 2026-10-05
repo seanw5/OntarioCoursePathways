@@ -70,14 +70,16 @@ ul.tree,ul.tree ul{list-style:none;margin:0;padding:0}
 ul.tree ul{margin-left:11px;padding-left:13px;border-left:1px solid var(--line)}
 ul.tree li{position:relative}
 ul.tree ul>li::before{content:"";position:absolute;left:-13px;top:15px;width:9px;border-top:1px solid var(--line)}
-.row{display:flex;align-items:baseline;gap:8px;min-height:30px;padding:3px 8px;border-radius:6px;border:1px solid transparent}
+.row{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 8px;min-height:30px;padding:3px 8px;border-radius:6px;border:1px solid transparent}
 .code{font-family:var(--mono);font-size:12.5px;font-weight:700;letter-spacing:.02em;flex:none}
-.cname{min-width:0;font-size:14px}
+.cname{min-width:0;font-size:14px;flex:0 1 auto}
 .g11{color:var(--muted)}
 .row .tag{font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;border:1px solid var(--line);border-radius:4px;padding:0 5px;flex:none;color:var(--muted)}
 .g11.sel{color:var(--ink)}
 .row.sel .tag{border-color:var(--accent);color:var(--accent)}
 label.row{cursor:pointer}
+label.row.locked{cursor:default}
+.row .tag.must{border-color:var(--accent);color:var(--accent)}
 label.row:hover{border-color:var(--line);background:var(--surface)}
 label.row input{accent-color:var(--accent);margin:0;align-self:center;width:15px;height:15px;flex:none}
 label.row.sel{background:var(--accent-soft)}
@@ -169,6 +171,7 @@ footer p{margin:0 0 8px}
 
   <footer>
     <p><strong>What this covers.</strong> The Grade 12 university (U) and university/college (M) courses that Ontario universities count toward admission, the college (C) courses that college programs name as prerequisites, and the Grade 11 course each one builds on. Course codes, titles and prerequisite links match the Ministry of Education's Course Descriptions and Prerequisites listing (updated August 2026). Focus courses in the arts and emphasis courses in technology use variant codes and are not listed separately. Workplace, open and other college-level courses are left out. They count toward the diploma but are not named as program prerequisites.</p>
+    <p><strong>Compulsory courses.</strong> Grade 11 and Grade 12 English are compulsory for the Ontario diploma, so one English course in each grade is always ticked. The university track locks the university-level course. The college track lets you swap between college and university level. The diploma also needs one Grade 11 or 12 math credit, but any math course satisfies it, so none is ticked for you.</p>
     <p><strong>What it does not cover.</strong> Prerequisites shown are the typical set across Ontario universities and Ontario public colleges. College programs elsewhere in Canada set requirements against their own province's courses. A university-level course always satisfies a college-level requirement in the same subject, and where a college asks for Grade 11 or 12 biology or chemistry, the Grade 12 U course counts too. Individual schools differ, and some add minimum grades, supplementary applications, portfolios or auditions. Every university program also needs six Grade 12 U/M credits and a competitive average. College prerequisites were checked in October 2026 against program pages at Durham, Georgian, Mohawk, Conestoga and Lambton colleges. The skilled trades and cook and baker entries are the college programs that prepare for those trades. Licensing as an electrician, plumber or refrigeration mechanic comes through an apprenticeship, which has its own entry rules. ontariocolleges.ca does not list course prerequisites itself and sends applicants to each college's page. Confirm on OUInfo or the school's own admissions page before choosing courses. French-language programs accept FRA4U in place of ENG4U.</p>
   </footer>
 </div>
@@ -180,12 +183,12 @@ const MATH = ['MHF4U','MCV4U','MDM4U'];
 // Subject > Grade 11 > Grade 12. g:11 rows are context only; the rest are selectable.
 const SUBJECTS = [
   ['English', [
-    {code:'ENG3U', name:'English', g:11, kids:[
-      {code:'ENG4U', name:'English'},
+    {code:'ENG3U', name:'English', g:11, must:true, kids:[
+      {code:'ENG4U', name:'English', must:true},
       {code:'EWC4U', name:"The Writer's Craft"},
       {code:'ETS4U', name:'Studies in Literature'}]},
-    {code:'ENG3C', name:'English (college)', g:11, kids:[
-      {code:'ENG4C', name:'English (college)'}]}]],
+    {code:'ENG3C', name:'English (college)', g:11, must:true, kids:[
+      {code:'ENG4C', name:'English (college)', must:true}]}]],
   ['Mathematics', [
     {code:'MCR3U', name:'Functions', g:11, kids:[
       {code:'MHF4U', name:'Advanced Functions', kids:[
@@ -268,6 +271,11 @@ const UNI_FIELDS = [
     {id:'cs', name:'Computer Science', req:['ENG4U','MHF4U','MCV4U'], note:'ICS4U is recommended, rarely required.'},
     {id:'math', name:'Mathematics and Statistics', req:['ENG4U','MHF4U','MCV4U']},
     {id:'arch', name:'Architecture', req:['ENG4U','SPH4U',G(1,['MHF4U','MCV4U'])], note:'Most schools also ask for a portfolio.'}]],
+  ['Aviation', [
+    {id:'avsci', name:'Science and Aviation (pilot training)', req:['ENG4U','MHF4U','MCV4U',G(2,['SBI4U','SCH4U','SPH4U','SES4U','MDM4U'])], note:'Offered at Waterloo. Includes flight training and needs a Transport Canada Category 1 medical.'},
+    {id:'avgeo', name:'Geography and Aviation (pilot training)', req:['ENG4U',G(1,MATH)], note:'Offered at Waterloo. Includes flight training and needs a Transport Canada Category 1 medical.'},
+    {id:'avtech', name:'Aviation Technology (pilot training)', req:['ENG4U','MHF4U','MCV4U','SPH4U'], note:'Honours degree offered at Seneca Polytechnic. Includes flight training.'},
+    {id:'avmgmt', name:'Commercial Aviation Management', req:['ENG4U',G(2,['MHF4U','MCV4U','MDM4U'])], note:'Offered at Western, with an optional flight training stream.'}]],
   ['Science', [
     {id:'life', name:'Life Sciences and Biology', req:['ENG4U','SBI4U','SCH4U',G(1,['MHF4U','MCV4U'])]},
     {id:'biomed', name:'Biomedical and Medical Sciences', req:['ENG4U','MHF4U','MCV4U','SBI4U','SCH4U']},
@@ -334,6 +342,9 @@ const COL_FIELDS = [
     {id:'c-arch', name:'Architectural Technology', req:[ENG,CMATH]},
     {id:'c-bio', name:'Biotechnology and Chemical Laboratory', req:[ENG,CMATH,CHEM], note:'Varies widely. Some colleges also require biology, and others only recommend the sciences.'},
     {id:'c-env', name:'Environmental Technician', req:[ENG,CMATH], note:'Grade 11 or 12 science is strongly recommended.'}]],
+  ['Aviation', [
+    {id:'c-fly', name:'Aviation Flight (pilot training)', req:[ENG,G(1,['MCT4C','MHF4U']),G(1,['SPH4C','SPH3U'])], note:'Shown as Sault College requires. Confederation asks only for English and Grade 11 or 12 math. Needs a Transport Canada Category 1 medical.'},
+    {id:'c-ame', name:'Aircraft Maintenance Technician', req:[ENG,CMATH], note:'Some colleges accept Grade 11 math. Physics is recommended.'}]],
   ['Skilled Trades', [
     {id:'c-elec', name:'Electrician (Electrical Techniques)', req:[ENG,CMATH], note:'Some colleges ask for English only.'},
     {id:'c-plumb', name:'Plumber (Plumbing Techniques)', req:[ENG], note:'Some colleges also ask for Grade 12 math.'},
@@ -397,6 +408,7 @@ function buildNode(node, parent) {
   cb.addEventListener('change', () => toggle(node.code, cb.checked));
   row.append(cb, el('span', 'code', node.code), el('span', 'cname', node.name));
   row.append(el('span', 'tag', node.tag || (node.g === 11 ? 'Gr 11' : 'Gr 12')));
+  if (node.must) row.append(el('span', 'tag must', 'Compulsory'));
   row.addEventListener('mouseenter', () => setHot({type:'c', id:node.code}));
   row.addEventListener('mouseleave', () => setHot(null));
   courseEl[node.code] = row;
@@ -435,6 +447,7 @@ function setTrack(t) {
   $('credits').hidden = t !== 'u';
   $('map').classList.toggle('pin', t === 'c');
   try { localStorage.setItem(KEY + '-track', t); } catch (e) {}
+  enforce();
   update();
 }
 
@@ -475,7 +488,13 @@ const missing = p => p.req.filter(r => !itemMet(r));
 
 function select(code) { selected.add(code); if (parentOf[code]) select(parentOf[code]); }
 function deselect(code) { selected.delete(code); (kidsOf[code] || []).forEach(deselect); }
-function toggle(code, on) { on ? select(code) : deselect(code); save(); update(); }
+// Grade 11 and 12 English are compulsory for the OSSD, so one English course per grade stays ticked.
+// University track: the U course. College track: either level, swapping when the last one is unticked.
+function enforce(removed) {
+  if (show === 'u') select('ENG4U');
+  else if (!selected.has('ENG4U') && !selected.has('ENG4C')) select(removed === 'ENG3U' || removed === 'ENG4U' ? 'ENG4C' : 'ENG4U');
+}
+function toggle(code, on) { on ? select(code) : deselect(code); enforce(code); save(); update(); }
 
 function addMissing(p) {
   missing(p).forEach(r => {
@@ -494,6 +513,7 @@ function update() {
     row.classList.toggle('sel', on);
     row.querySelector('input').checked = on;
   });
+  ['ENG3U', 'ENG4U'].forEach(c => { courseEl[c].querySelector('input').disabled = show === 'u'; courseEl[c].classList.toggle('locked', show === 'u'); });
   const open = {u:0, c:0}, total = {u:0, c:0};
   programs.forEach(p => {
     const card = progEl[p.id], miss = missing(p), ok = miss.length === 0;
@@ -571,7 +591,7 @@ buildPrograms();
 $('presets').addEventListener('click', ev => {
   const k = ev.target.dataset && ev.target.dataset.preset;
   if (!k) return;
-  selected.clear(); PRESETS[k].forEach(select); save(); update();
+  selected.clear(); PRESETS[k].forEach(select); enforce(); save(); update();
 });
 $('tracks').addEventListener('click', ev => {
   const b = ev.target.closest('button[data-show]');
