@@ -33,6 +33,8 @@ body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15p
 .page{max-width:1180px;margin:0 auto;padding-inline:20px;padding-block:28px 56px}
 header h1{font-family:var(--display);font-weight:700;font-size:clamp(28px,4.5vw,42px);line-height:1.05;margin:0 0 10px;text-wrap:balance;letter-spacing:-.01em}
 header p{max-width:65ch;margin:0;color:var(--muted)}
+header p.disclaimer{margin-top:12px;padding:8px 12px;border:1px solid var(--warn);border-radius:6px;background:var(--warn-soft);color:var(--ink);font-size:13.5px}
+header p.disclaimer strong{color:var(--warn)}
 .presets{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;align-items:center}
 .presets span{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-right:4px}
 button{font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:6px 14px;cursor:pointer}
@@ -143,6 +145,7 @@ footer p{margin:0 0 8px}
   <header>
     <h1>Which university and college programs do your courses open?</h1>
     <p>Tick the Ontario Grade 11 and 12 courses you have or plan to take. Pick a track to see the courses that matter for it and the programs they lead to. Your ticks carry over between tracks. Programs you meet the prerequisites for light up. The rest stay grey and show which courses are missing.</p>
+    <p class="disclaimer"><strong>Disclaimer.</strong> This app was built using AI. The program mappings are loosely based on previously available curriculum and program requirements, and they have not been verified exhaustively. Requirements change and differ between schools, so confirm with each school before choosing courses.</p>
     <div class="tracks" id="tracks" role="group" aria-label="Choose a track">
       <button type="button" data-show="u" aria-pressed="true"><small>Track 1</small>High school → University</button>
       <button type="button" data-show="c" aria-pressed="false"><small>Track 2</small>High school → College</button>
